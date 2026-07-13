@@ -118,7 +118,7 @@ if option == "Generate Text-Speech Audio":
       
       audio_file = "Output.wav"
       config_audio = speechsdk.audio.AudioOutputConfig(filename=audio_file)
-      synthesizer =  .SpeechSynthesizer(
+      synthesizer = speechsdk.SpeechSynthesizer(
         speech_config=config_speech,
         audio_config=config_audio
         )
@@ -189,3 +189,4 @@ if audio_data is not None:
 
     except Exception as e:
         st.error(f"Error processing audio: {e}")
+        
