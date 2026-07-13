@@ -4,3 +4,4 @@ transformers
 librosa
 soundfile
 numpy
+azure-cognitiveservices-speech
