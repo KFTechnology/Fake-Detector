@@ -1,59 +1,73 @@
-import streamlit as st 
-import librosa
-import torch
-import numpy as np
-from transformers import AutoModelForAudioClassification
-from transformers import AutoFeatureExtractor
-import os 
-from dotenv import load_dotenv
-import azure.cognitiveservices.speech as speachsdk
-from audiorecorder import audiorecorder
-import tempfile
+import streamlit as st
+import azure.cognitiveservices.speech as speechsdk
+import os
+
+# ===== CONFIG =====
+speech_key = "YOUR_KEY_HERE"
+region = "eastus2"
+
+speech_config = speechsdk.SpeechConfig(
+    subscription=speech_key,
+    region=region
+)
+
+# ===== VOICE OPTIONS =====
+voices = {
+    "Friendly Female (Jenny)": "en-US-JennyNeural",
+    "Professional Female (Aria)": "en-US-AriaNeural",
+    "Male Voice (Guy)": "en-US-GuyNeural",
+    "Arabic Female (Zariyah)": "ar-SA-ZariyahNeural"
+}
+
+# ===== UI =====
+st.title("🎙️ AI Voice Generator")
+
+text = st.text_area("Enter text", "Hello Farah, this is your AI voice!")
+
+voice_choice = st.selectbox("Choose Voice", list(voices.keys()))
+style = st.selectbox("Emotion", ["general", "cheerful", "sad", "angry"])
+
+rate = st.slider("Speed", 0.5, 1.5, 1.0)
+pitch = st.slider("Pitch", -20, 20, 0)
+
+# Convert to SSML format values
+rate_str = f"{rate}"
+pitch_str = f"{pitch}%"
+
+selected_voice = voices[voice_choice]
+
+# ===== GENERATE BUTTON =====
+if st.button("Generate Voice 🔊"):
+
+    ssml = f"""
+    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis"
+           xmlns:mstts="http://www.w3.org/2001/mstts"
+           xml:lang="en-US">
+        <voice name="{selected_voice}">
+            <mstts:express-as style="{style}">
+                <prosody rate="{rate_str}" pitch="{pitch_str}">
+                    {text}
+                </prosody>
+            </mstts:express-as>
+        </voice>
+    </speak>
+    """
+
+    audio_file = "output.wav"
+
+    audio_config = speechsdk.audio.AudioOutputConfig(filename=audio_file)
+
+    synthesizer = speechsdk.SpeechSynthesizer(
+        speech_config=speech_config,
+        audio_config=audio_config
+    )
+    
 
 
-def load_model ():
-    model = "garystafford/wav2vec2-deepfake-voice-detector"
-    model_classifcation = AutoModelForAudioClassification.from_pretrained(model)
-    model_extractor = AutoFeatureExtractor.from_pretrained(model)
+    result = synthesizer.speak_ssml_async(ssml).get()
 
-    return model_classifcation, model_extractor
-
-model_classifcation, model_extractor = load_model()
-
-
-st.title("fake Audio detector")
-st.write("please uplaod your Audio to know if fake or real ")
-
-upload_file = st.file_uploader("Upload File" , type=["wav", "mp3", "flac"])
-
-if upload_file is not None: 
-   st.audio(upload_file)
-   audio, sr = librosa.load(upload_file, sr=1600, mono=True)
-
-max_lan = 1600 * 20 
-audio = audio[:max_lan]
-
-inputs = model_extractor(audio, sample_rate= 1600, return_tensors="pt", padding=True)
-
-with torch.no_grad():
- outputs = model_classifcation(**inputs)
- 
- probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
-
-
-prob_real = probs[0][0].item()
-prob_fake = probs[0][1].item()
-
-st.subheader("Result")
-
-if prob_fake > prob_real:
-        st.error("⚠️ FAKE AUDIO DETECTED")
-else:
-        st.success("✅ REAL HUMAN VOICE")
-
- 
-st.write(f"Real probability: {prob_real:.2%}")
-st.write(f"Fake probability: {prob_fake:.2%}")
-
-
-st.progress(float(prob_fake))
+    if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+        st.success("✅ Audio generated!")
+        st.audio(audio_file)
+    else:
+        st.error("❌ Error generating speech")
