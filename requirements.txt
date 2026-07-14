@@ -5,6 +5,5 @@ soundfile
 transformers
 torch
 azure-cognitiveservices-speech
-openai
 python-dotenv
 pyaudio
