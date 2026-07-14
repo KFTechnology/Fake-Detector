@@ -1,9 +1,9 @@
 streamlit
-torch==2.2.0
-transformers
+numpy
 librosa
 soundfile
-numpy
+transformers
+torch==2.2.0+cpu --index-url https://download.pytorch.org/whl/cpu
 azure-cognitiveservices-speech==1.37.0
 openai
 audiorecorder
