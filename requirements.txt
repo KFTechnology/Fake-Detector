@@ -1,9 +1,9 @@
 streamlit
-torch
+torch==2.2.0
 transformers
 librosa
 soundfile
 numpy
-azure-cognitiveservices-speech
+azure-cognitiveservices-speech==1.37.0
 openai
 audiorecorder
