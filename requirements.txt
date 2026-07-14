@@ -6,3 +6,7 @@ soundfile
 numpy
 azure-cognitiveservices-speech
 openai
+AutoModelForAudioClassification
+AutoFeatureExtractor
+audiorecorder
+tempfile
