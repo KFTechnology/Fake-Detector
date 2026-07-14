@@ -6,5 +6,4 @@ transformers
 torch
 azure-cognitiveservices-speech
 openai
-audiorecorder
 python-dotenv
