@@ -6,3 +6,4 @@ transformers
 torch
 azure-cognitiveservices-speech
 python-dotenv
+huggingface_hub
