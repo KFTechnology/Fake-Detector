@@ -4,8 +4,6 @@ import librosa
 import numpy as np
 from transformers import AutoModelForAudioClassification, AutoFeatureExtractor
 import azure.cognitiveservices.speech as speechsdk
-import openai
-from audiorecorder import audiorecorder
 from dotenv import load_dotenv
 import tempfile
 import os
@@ -149,6 +147,7 @@ if option == "Upload Audio":
 
 
 if option == "Record Audio":
+    from audiorecorder import audiorecorder
     audio = audiorecorder("Start Recording", "Stop Recording")
     
     if len(audio) > 0:
@@ -189,4 +188,3 @@ if audio_data is not None:
 
     except Exception as e:
         st.error(f"Error processing audio: {e}")
-        
