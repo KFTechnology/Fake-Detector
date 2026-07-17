@@ -8,3 +8,4 @@ azure-cognitiveservices-speech
 python-dotenv
 huggingface_hub
 streamlit-audiorecorder
+streamlit-webrtc
