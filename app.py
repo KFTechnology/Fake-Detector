@@ -147,16 +147,63 @@ if option == "Upload Audio":
 
 
 if option == "Record Audio":
-    from audiorecorder import audiorecorder
-    audio = audiorecorder("Start Recording", "Stop Recording")
-    
-    if len(audio) > 0:
-        st.audio(audio.export().read())
-        
-  
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-            f.write(audio.export().read())
-            audio_data = f.name
+    from streamlit_webrtc import webrtc_streamer 
+    from streamlit_webrtc import AudioProcessorBase 
+    import numpy as np 
+    import av
+    import soundfile as sf 
+    import tempfile
+
+    class AudioProcessor(AudioProcessorBase):
+        def __init__(self):
+            self.frames = []
+
+        def recv(self, frame: av.AudioFrame):
+            self.frames.append(frame.to_ndarray())
+            return frame
+
+    webrtc_ctx = webrtc_streamer(key="audio")
+
+    audio_data = None
+
+    if webrtc_ctx.state.playing:
+        st.info("Recording... press stop then click save")
+
+    if st.button("Save Recording"):
+        if webrtc_ctx.audio_receiver:
+            frames = []
+            try:
+                while True:
+                    frame = webrtc_ctx.audio_receiver.get_frame(timeout=1)
+                    frames.append(frame.to_ndarray())
+            except:
+                pass
+
+            if frames:
+                audio_np = np.concatenate(frames, axis=1)
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+                    sf.write(f.name, audio_np.T, 16000)
+                    audio_data = f.name
+
+                st.audio(audio_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if audio_data is not None:
