@@ -162,7 +162,14 @@ if option == "Record Audio":
             self.frames.append(frame.to_ndarray())
             return frame
 
-    webrtc_ctx = webrtc_streamer(key="audio")
+    webrtc_ctx = webrtc_streamer(
+        key="audio", 
+        media_stream_constraints={
+            "audio" : True, 
+            "video" : False
+        }
+
+        )
 
     audio_data = None
 
