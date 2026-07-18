@@ -148,6 +148,7 @@ if option == "Upload Audio":
 
 if option == "Record Audio":
     from streamlit_webrtc import webrtc_streamer 
+    from streamlit_webrtc import WebRtcMode
     from streamlit_webrtc import AudioProcessorBase 
     import numpy as np 
     import av
@@ -164,14 +165,15 @@ if option == "Record Audio":
 
     webrtc_ctx = webrtc_streamer(
         key="audio", 
+        mode=WebRtcMode.SENDONLY,
         media_stream_constraints={
             "audio" : True, 
             "video" : False
-        }
+        }, 
+        audio_receiver_size=1024,
 
         )
 
-    audio_data = None
 
     if webrtc_ctx.state.playing:
         st.info("Recording... press stop then click save")
