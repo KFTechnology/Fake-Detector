@@ -188,24 +188,6 @@ if option == "Record Audio":
 
                 st.audio(audio_data)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if audio_data is not None:
     try:
        
