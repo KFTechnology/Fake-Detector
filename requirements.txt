@@ -1,11 +1,8 @@
-torch==2.2.2
-librosa==0.10.1
 streamlit
 numpy
-transformers
-azure-cognitiveservices-speech
-python-dotenv
-huggingface_hub
 soundfile
 audiorecorder
 pydub
+requests
+python-dotenv
+azure-cognitiveservices-speech
