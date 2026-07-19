@@ -11,6 +11,8 @@ import os
 
 load_dotenv()
 
+st.write("FFmpeg:", shutil.which("ffmpeg"))
+
 # Speech-text-speech model 
 Azure_Model_Endpoint =  os.getenv("AZURE_Resource_ENDPOINT")
 Azure_API_Key = os.getenv("AZURE_SPEECH_KEY")
