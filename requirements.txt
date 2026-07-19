@@ -1,13 +1,11 @@
+torch==2.2.2
+librosa==0.10.1
 streamlit
 numpy
-librosa
 transformers
-torch
 azure-cognitiveservices-speech
 python-dotenv
 huggingface_hub
-streamlit-webrtc
 soundfile
-av
 audiorecorder
 pydub
