@@ -199,8 +199,9 @@ if option == "Record Audio":
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
                 sf.write(f.name, audio_np.T, 16000)
-                st.success("Audio saved!")
-                st.audio(audio_data) 
+                audio_data = f.name 
+            st.success("Audio saved!")
+            st.audio(audio_data) 
 
 if audio_data is not None:
     try:
