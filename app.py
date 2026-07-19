@@ -180,35 +180,25 @@ if option == "Record Audio":
         st.info("Recording... press stop then click save")
 
     if st.button("Save Recording"):
-        if webrtc_ctx.audio_processor is None:
-            st.error("No audio found")
-        else:    
-            #frames = []
-            frames = webrtc_ctx.audio_processor.frames
+     if webrtc_ctx.audio_processor is None:
+        st.error("No audio processor found")
+     else:
+        frames = webrtc_ctx.audio_processor.frames
 
-         #   try:
-         #      while True:
-         #           frame = webrtc_ctx.audio_receiver.get_frame(timeout=1)
-         #           fram = webrtc_ctx.audio_processor
-         #           frames.append(frame.to_ndarray())
-         #   except:
-         #       pass
+        if len(frames) == 0:
+            st.error("No audio recorded")
+        else:
+            import numpy as np
+            audio_np = np.concatenate(frames, axis=1)
 
+            if audio_np.shape[0] > 1:
+                audio_np = np.mean(audio_np, axis=0, keepdims=True)
 
-            if len(frames) == 0:
-                st.error("No audio recorded")
-            else:
-                audio_np = np.concatenate(frames, axis=1)
+            import soundfile as sf
+            import tempfile
 
-
-                if audio_np.shape[0] > 1:
-                    audio_np = np.mean(audio_np, axis=0, keepdims=True)
-    
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-                    sf.write(f.name, audio_np.T, 16000)
-                    audio_data = f.name
-
-                
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+                sf.write(f.name, audio_np.T, 16000)
                 st.success("Audio saved!")
                 st.audio(audio_data) 
 
