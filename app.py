@@ -8,6 +8,7 @@ import azure.cognitiveservices.speech as speechsdk
 from dotenv import load_dotenv
 import tempfile
 import os
+import shutil
 
 load_dotenv()
 
