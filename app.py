@@ -3,6 +3,7 @@ import torch
 import librosa
 import numpy as np
 from transformers import AutoModelForAudioClassification, AutoFeatureExtractor
+from audiorecorder import audiorecorder
 import azure.cognitiveservices.speech as speechsdk
 from dotenv import load_dotenv
 import tempfile
@@ -147,71 +148,16 @@ if option == "Upload Audio":
 
 
 if option == "Record Audio":
-   import streamlit as st
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, AudioProcessorBase
-import numpy as np
-import av
-import soundfile as sf
-import tempfile
-
-
-class AudioProcessor(AudioProcessorBase):
-    def __init__(self):
-        self.frames = []
-
-    def recv(self, frame: av.AudioFrame):
-        self.frames.append(frame.to_ndarray())
-        return frame
-
-
-# track previous state
-if "was_recording" not in st.session_state:
-    st.session_state.was_recording = False
-
-
-webrtc_ctx = webrtc_streamer(
-    key="audio",
-    mode=WebRtcMode.RECVONLY,
-    audio_processor_factory=AudioProcessor,
-    media_stream_constraints={"audio": True, "video": False},
-)
-
-
-# 🎤 show recording status
-if webrtc_ctx.state.playing:
-    st.info("Recording... speak now")
-    st.session_state.was_recording = True
-
-
-# 🎯 detect STOP event
-if (
-    st.session_state.was_recording
-    and not webrtc_ctx.state.playing
-    and webrtc_ctx.audio_processor
-):
-    frames = webrtc_ctx.audio_processor.frames
-
-    if len(frames) == 0:
-        st.error("No audio recorded")
-    else:
-        audio_np = np.concatenate(frames, axis=1)
-
-        if audio_np.shape[0] > 1:
-            audio_np = np.mean(audio_np, axis=0, keepdims=True)
-
+  audio = audiorecorder("Start Recording", "Stop Recording")
+    
+  if len(audio) > 0:
+        st.audio(audio.export().read())
+        
+  
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-            sf.write(f.name, audio_np.T, 16000)
+            f.write(audio.export().read())
             audio_data = f.name
 
-        st.success("Audio recorded!")
-        st.audio(audio_data)
-
-        # 👉 HERE you can run your fake/real model
-        # prediction = your_model(audio_data)
-        # st.write("Result:", prediction)
-
-    # reset state
-    st.session_state.was_recording = False
 
 if audio_data is not None:
     try:
@@ -242,3 +188,7 @@ if audio_data is not None:
 
     except Exception as e:
         st.error(f"Error processing audio: {e}")
+
+
+
+
