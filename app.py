@@ -165,7 +165,8 @@ if option == "Record Audio":
 
     webrtc_ctx = webrtc_streamer(
         key="audio", 
-        mode=WebRtcMode.SENDONLY,
+        mode=WebRtcMode.RECVONLY,
+        audio_processor_factory=AudioProcessor,
         media_stream_constraints={
             "audio" : True, 
             "video" : False
@@ -179,16 +180,19 @@ if option == "Record Audio":
         st.info("Recording... press stop then click save")
 
     if st.button("Save Recording"):
-        if webrtc_ctx.audio_receiver is None:
-            st.error("No audio receiver found")
+        if webrtc_ctx.audio_processor is None:
+            st.error("No audio found")
         else:    
-            frames = []
-            try:
-                while True:
-                    frame = webrtc_ctx.audio_receiver.get_frame(timeout=1)
-                    frames.append(frame.to_ndarray())
-            except:
-                pass
+            #frames = []
+            frames = webrtc_ctx.audio_processor.frames
+
+         #   try:
+         #      while True:
+         #           frame = webrtc_ctx.audio_receiver.get_frame(timeout=1)
+         #           fram = webrtc_ctx.audio_processor
+         #           frames.append(frame.to_ndarray())
+         #   except:
+         #       pass
 
 
             if len(frames) == 0:
