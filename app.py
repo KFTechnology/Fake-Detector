@@ -147,61 +147,71 @@ if option == "Upload Audio":
 
 
 if option == "Record Audio":
-    from streamlit_webrtc import webrtc_streamer 
-    from streamlit_webrtc import WebRtcMode
-    from streamlit_webrtc import AudioProcessorBase 
-    import numpy as np 
-    import av
-    import soundfile as sf 
-    import tempfile
-
-    class AudioProcessor(AudioProcessorBase):
-        def __init__(self):
-            self.frames = []
-
-        def recv(self, frame: av.AudioFrame):
-            self.frames.append(frame.to_ndarray())
-            return frame
-
-    webrtc_ctx = webrtc_streamer(
-        key="audio", 
-        mode=WebRtcMode.RECVONLY,
-        audio_processor_factory=AudioProcessor,
-        media_stream_constraints={
-            "audio" : True, 
-            "video" : False
-        }, 
-        audio_receiver_size=1024,
-
-        )
+   import streamlit as st
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, AudioProcessorBase
+import numpy as np
+import av
+import soundfile as sf
+import tempfile
 
 
-    if webrtc_ctx.state.playing:
-        st.info("Recording... press stop then click save")
+class AudioProcessor(AudioProcessorBase):
+    def __init__(self):
+        self.frames = []
 
-    if st.button("Save Recording"):
-     if webrtc_ctx.audio_processor is None:
-        st.error("No audio processor found")
-     else:
-        frames = webrtc_ctx.audio_processor.frames
+    def recv(self, frame: av.AudioFrame):
+        self.frames.append(frame.to_ndarray())
+        return frame
 
-        if len(frames) == 0:
-            st.error("No audio recorded")
-        else:
-            import numpy as np
-            audio_np = np.concatenate(frames, axis=1)
 
-            if audio_np.shape[0] > 1:
-                audio_np = np.mean(audio_np, axis=0, keepdims=True)
+# track previous state
+if "was_recording" not in st.session_state:
+    st.session_state.was_recording = False
 
-            import soundfile as sf
-            import tempfile
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-                sf.write(f.name, audio_np.T, 16000)
-                audio_data = f.name 
-            st.success("Audio saved!")
-            st.audio(audio_data) 
+webrtc_ctx = webrtc_streamer(
+    key="audio",
+    mode=WebRtcMode.RECVONLY,
+    audio_processor_factory=AudioProcessor,
+    media_stream_constraints={"audio": True, "video": False},
+)
+
+
+# 🎤 show recording status
+if webrtc_ctx.state.playing:
+    st.info("Recording... speak now")
+    st.session_state.was_recording = True
+
+
+# 🎯 detect STOP event
+if (
+    st.session_state.was_recording
+    and not webrtc_ctx.state.playing
+    and webrtc_ctx.audio_processor
+):
+    frames = webrtc_ctx.audio_processor.frames
+
+    if len(frames) == 0:
+        st.error("No audio recorded")
+    else:
+        audio_np = np.concatenate(frames, axis=1)
+
+        if audio_np.shape[0] > 1:
+            audio_np = np.mean(audio_np, axis=0, keepdims=True)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+            sf.write(f.name, audio_np.T, 16000)
+            audio_data = f.name
+
+        st.success("Audio recorded!")
+        st.audio(audio_data)
+
+        # 👉 HERE you can run your fake/real model
+        # prediction = your_model(audio_data)
+        # st.write("Result:", prediction)
+
+    # reset state
+    st.session_state.was_recording = False
 
 if audio_data is not None:
     try:
