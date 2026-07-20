@@ -11,7 +11,7 @@ import shutil
 
 load_dotenv()
 
-st.write("FFmpeg:", shutil.which("ffmpeg"))
+#st.write("FFmpeg:", shutil.which("ffmpeg"))
 
 # Speech-text-speech model 
 Azure_Model_Endpoint =  os.getenv("AZURE_Resource_ENDPOINT")
